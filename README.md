@@ -98,10 +98,10 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 If you use PyEhsa in your research, please cite:
 
 ```bibtex
-@software{pyehsa2024,
+@software{pyehsa2025,
   author = {Azevedo, Lucas},
   title = {PyEhsa: Emerging Hot Spot Analysis in Python},
-  year = {2024},
+  year = {2025},
   url = {https://github.com/yourusername/PyEhsa}
 }
 ```
@@ -122,5 +122,3 @@ PyEhsa is inspired by and provides similar functionality to:
 This package is actively developed and maintained. For support, please open an issue on [GitHub Issues](https://github.com/yourusername/PyEhsa/issues).
 
 ---
-
-**Made with ❤️ for the spatial analysis community**
