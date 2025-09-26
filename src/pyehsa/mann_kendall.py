@@ -18,8 +18,9 @@ class MannKendall:
         # Convert input to numpy array and remove NaN values
         x = np.array(x)
         x = x[~np.isnan(x)]
+        n = len(x)  # Update n after filtering NaN values
 
-        if len(x) <= 1:
+        if n <= 1:
             return {"x": None, "tau": 0, "sl": 1.0, "S": 0, "D": 0, "varS": 0}
 
         # Calculate S statistic
