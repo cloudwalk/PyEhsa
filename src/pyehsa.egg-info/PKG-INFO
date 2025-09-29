@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: pyehsa
 Version: 0.1.0
 Summary: A Python library for Emerging Hot Spot Analysis (EHSA) of spatio-temporal data
-Author-email: Lucas Azevedo <lucas.azevedo@cloudwalk.io>
+Author-email: CloudWalk <lucas.azevedo@cloudwalk.io>
 License: MIT
 Project-URL: Homepage, https://github.com/yourusername/PyEhsa
 Project-URL: Documentation, https://pyehsa.readthedocs.io

@@ -9,7 +9,7 @@ description = "A Python library for Emerging Hot Spot Analysis (EHSA) of spatio-
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Lucas Azevedo", email = "lucas.azevedo@cloudwalk.io"}
+    {name = "CloudWalk", email = "lucas.azevedo@cloudwalk.io"}
 ]
 keywords = ["spatial analysis", "hotspots", "statistics", "gis", "spatio-temporal"]
 classifiers = [

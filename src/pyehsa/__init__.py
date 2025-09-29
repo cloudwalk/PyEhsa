@@ -6,7 +6,7 @@ in geographic data, similar to functionality found in R's sfdep package.
 """
 
 __version__ = "0.1.0"
-__author__ = "Lucas Azevedo"
+__author__ = "CloudWalk"
 __email__ = "lucas.azevedo@cloudwalk.io"
 
 # Import main classes for easy access
