@@ -99,10 +99,10 @@ If you use PyEhsa in your research, please cite:
 
 ```bibtex
 @software{pyehsa2025,
-  author = {Azevedo, Lucas},
+  author = {CloudWalk},
   title = {PyEhsa: Emerging Hot Spot Analysis in Python},
   year = {2025},
-  url = {https://github.com/yourusername/PyEhsa}
+  url = {https://github.com/cloudwalk/PyEhsa}
 }
 ```
 
@@ -119,6 +119,6 @@ PyEhsa is inspired by and provides similar functionality to:
 
 ## 📈 Development Status
 
-This package is actively developed and maintained. For support, please open an issue on [GitHub Issues](https://github.com/yourusername/PyEhsa/issues).
+This package is actively developed and maintained. For support, please open an issue on [GitHub Issues](https://github.com/cloudwalk/PyEhsa/issues).
 
 ---
