@@ -1,6 +1,6 @@
 import geopandas as gpd
 import numpy as np
-from libpysal.weights import Queen, KNN
+from libpysal.weights import Queen
 
 
 class SpacialWeights:
@@ -21,15 +21,6 @@ class SpacialWeights:
         # Calculate Queen contiguity weights. This defines neighbors as polygons
         # that share at least one vertex (corners or edges).
         w = Queen.from_dataframe(unique_geoms, use_index=True)
-        
-        # Check if Queen contiguity found adequate neighbors (for grid data)
-        avg_neighbors = np.mean([len(neighbors) for neighbors in w.neighbors.values()])
-        
-        # If average neighbors is very low (< 2), likely a grid with adjacency issues
-        # Use KNN as backup for better neighbor detection
-        if avg_neighbors < 2.0:
-            print(f"Queen contiguity found only {avg_neighbors:.1f} avg neighbors, using KNN backup...")
-            w = KNN.from_dataframe(unique_geoms, k=8, use_index=True)  # Up to 8 neighbors for grid
         
         # Include self as neighbor (matching R's include_self() function)
         # This is critical for matching R results

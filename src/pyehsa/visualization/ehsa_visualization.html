@@ -144,7 +144,13 @@
                     </div>
                     <div class="card-body">
                         <button id="inspectGeometryBtn" class="btn btn-primary" disabled>Inspect Time Series</button>
-                        <button id="showNeighborsBtn" class="btn btn-secondary" disabled>Show Neighbors</button>
+                        <!-- 
+                        TODO: Show Neighbors button is temporarily hidden
+                        The geographic neighbor detection logic is implemented and working,
+                        but needs refinement for grid data visualization.
+                        Remove style="display: none;" below to re-enable the button.
+                        -->
+                        <button id="showNeighborsBtn" class="btn btn-secondary" disabled style="display: none;">Show Neighbors</button>
                         <button id="resetMapBtn" class="btn btn-outline-danger">Reset Map</button>
                     </div>
                 </div>
@@ -829,8 +835,55 @@
             
             console.log(`Found ${foundNeighbors} neighbors out of ${neighbors.length} expected`);
             
+            // If no neighbors found by ID matching, try geographic proximity for grid data
             if (foundNeighbors === 0 && neighbors.length > 0) {
-                alert(`Could not visually locate any neighbors on the map. Expected neighbors: ${neighbors.join(', ')}`);
+                console.log('No neighbors found by ID, trying geographic proximity...');
+                
+                const selectedCoords = selectedFeature.getLatLng();
+                let proximityNeighbors = [];
+                
+                geojsonLayer.eachLayer(layer => {
+                    if (layer === selectedFeature) return; // Skip self
+                    
+                    const layerCoords = layer.getLatLng();
+                    const distance = selectedCoords.distanceTo(layerCoords);
+                    
+                    proximityNeighbors.push({
+                        layer: layer,
+                        distance: distance,
+                        regionId: getRegionId(layer.feature.properties)
+                    });
+                });
+                
+                // Sort by distance and take closest 8 (typical for grid)
+                proximityNeighbors.sort((a, b) => a.distance - b.distance);
+                const closestNeighbors = proximityNeighbors.slice(0, 8);
+                
+                console.log(`Found ${closestNeighbors.length} geographic neighbors`);
+                
+                // Highlight the closest neighbors
+                closestNeighbors.forEach(neighbor => {
+                    let blink = true;
+                    let baseStyle = {
+                        fillColor: '#90ee90', // lightgreen
+                        fillOpacity: 0.7,
+                        weight: 2,
+                        color: '#228B22' // forestgreen
+                    };
+                    neighbor.layer.setStyle(baseStyle);
+                    
+                    let interval = setInterval(() => {
+                        blink = !blink;
+                        neighbor.layer.setStyle({
+                            ...baseStyle,
+                            fillOpacity: blink ? 0.7 : 0.2
+                        });
+                    }, 500);
+                    neighbor.layer._iconBlinkInterval = interval;
+                    neighborFeatures.push(neighbor.layer);
+                });
+                
+                foundNeighbors = closestNeighbors.length;
             } else if (neighbors.length === 0) {
                 alert('This region has no neighbors.');
             }
