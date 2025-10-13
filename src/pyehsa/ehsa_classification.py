@@ -420,10 +420,10 @@ class EhsaClassification:
             location_data = []
             for _, row in group.iterrows():
                 location_data.append({
-                    "time_period": row[time_period_field],
-                    "value": row["gi"],
-                    "is_significant": row["p_sim"] <= threshold,
-                    "original_value": row.get(original_value_field, None) if original_value_field else None
+                    "time_period": str(row[time_period_field]),  # Convert to string for HTML compatibility
+                    "value": float(row["gi"]),
+                    "is_significant": bool(row["p_sim"] <= threshold),
+                    "original_value": float(row.get(original_value_field, None)) if original_value_field and pd.notna(row.get(original_value_field, None)) else None
                 })
 
             # Keep minimal debugging for pattern analysis
