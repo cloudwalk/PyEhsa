@@ -1,5 +1,6 @@
 import time
 import logging
+import warnings
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -129,6 +130,15 @@ class EmergingHotspotAnalysis:
         ...     k=1, nsim=199  # Matches R defaults exactly
         ... )
         """
+        # Validate nsim parameter to prevent resource exhaustion
+        if not isinstance(nsim, int) or nsim < 1:
+            raise ValueError(f"nsim must be a positive integer, got: {nsim}")
+        if nsim > 9999:
+            raise ValueError(f"nsim is too large ({nsim}). Maximum allowed: 9999")
+        if nsim > 999:
+            warnings.warn(f"nsim={nsim} is large and may consume significant resources. "
+                         f"Typical values are 99-999. Consider reducing if performance is an issue.")
+        
         start_time = time.time()
         
         # Setup logging

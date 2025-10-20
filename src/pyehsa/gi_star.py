@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import warnings
 from .spacial_weights import SpacialWeights
 
 
@@ -32,6 +33,15 @@ class GiStar:
         GeoDataFrame
             Original data with gi_star and p_sim columns added
         """
+        # Validate nsim parameter to prevent resource exhaustion
+        if not isinstance(nsim, int) or nsim < 1:
+            raise ValueError(f"nsim must be a positive integer, got: {nsim}")
+        if nsim > 9999:
+            raise ValueError(f"nsim is too large ({nsim}). Maximum allowed: 9999")
+        if nsim > 999:
+            warnings.warn(f"nsim={nsim} is large and may consume significant resources. "
+                         f"Typical values are 99-999.")
+        
         # Get sorted data (CRITICAL: must match R's ordering)
         gdf_sorted = gdf.sort_values([time_period_field, region_id_field]).reset_index(drop=True)
         
