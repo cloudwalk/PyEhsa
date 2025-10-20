@@ -201,6 +201,17 @@
         let neighborFeatures = [];
         let timeSeriesChart = null;
         
+        // Security: Escape HTML to prevent XSS attacks
+        function escapeHtml(unsafe) {
+            if (unsafe == null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
         // Atualizar as cores das classificações conforme o gabarito fornecido
         const classificationColors = {
             'no pattern detected': 'lightgray',
@@ -526,8 +537,8 @@
             
             layer.bindTooltip(`
                 <div class="tooltip-custom">
-                    <h6>Region: ${regionId}</h6>
-                    <p>Classification: ${classification}</p>
+                    <h6>Region: ${escapeHtml(regionId)}</h6>
+                    <p>Classification: ${escapeHtml(classification)}</p>
                 </div>
             `, {
                 sticky: true,
@@ -659,11 +670,11 @@
                     // Build an HTML table
                     let cols = Object.keys(parsedData[0]);
                     let html = '<div style="overflow-x:auto;"><table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;font-size:12px;width:100%"><thead><tr>';
-                    cols.forEach(col => { html += `<th>${col}</th>`; });
+                    cols.forEach(col => { html += `<th>${escapeHtml(col)}</th>`; });
                     html += '</tr></thead><tbody>';
                     parsedData.forEach(row => {
                         html += '<tr>';
-                        cols.forEach(col => { html += `<td>${row[col] !== null && row[col] !== undefined ? row[col] : ''}</td>`; });
+                        cols.forEach(col => { html += `<td>${escapeHtml(row[col] !== null && row[col] !== undefined ? row[col] : '')}</td>`; });
                         html += '</tr>';
                     });
                     html += '</tbody></table></div>';
@@ -682,7 +693,7 @@
             } else if (typeof data === 'object' && data !== null) {
                 html += '<ul style="margin:0 0 0 1em;padding:0">';
                 for (const k in data) {
-                    html += `<li>${pad}<strong>${k}:</strong> ${prettyPrintData(data[k], indent + 1, k)}</li>`;
+                    html += `<li>${pad}<strong>${escapeHtml(k)}:</strong> ${prettyPrintData(data[k], indent + 1, k)}</li>`;
                 }
                 html += '</ul>';
             } else {
@@ -691,7 +702,7 @@
                 if (typeof parsedData === 'object' && parsedData !== null) {
                     return prettyPrintData(parsedData, indent + 1);
                 }
-                html += pad + String(data);
+                html += pad + escapeHtml(String(data));
             }
             return html;
         }
@@ -703,10 +714,10 @@
             const classification = feature.properties.classification;
             
             let html = `
-                <h6>Region: ${regionId}</h6>
-                <p><strong>Classification:</strong> ${classification}</p>
-                <p><strong>Mann-Kendall Tau:</strong> ${feature.properties.tau}</p>
-                <p><strong>p-value:</strong> ${feature.properties.p_value}</p>
+                <h6>Region: ${escapeHtml(regionId)}</h6>
+                <p><strong>Classification:</strong> ${escapeHtml(classification)}</p>
+                <p><strong>Mann-Kendall Tau:</strong> ${escapeHtml(feature.properties.tau)}</p>
+                <p><strong>p-value:</strong> ${escapeHtml(feature.properties.p_value)}</p>
             `;
             
             // Show all details recursively
@@ -996,7 +1007,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: `Time Series for Region: ${getRegionId(feature.properties)}`
+                            text: `Time Series for Region: ${escapeHtml(getRegionId(feature.properties))}`
                         },
                         tooltip: {
                             callbacks: {
@@ -1030,11 +1041,11 @@
             const tau = feature.properties.tau;
             const pValue = feature.properties.p_value;
             timeSeriesInfo.innerHTML = `
-                <h5>Time Series Analysis for Region: ${getRegionId(feature.properties)}</h5>
-                <p><strong>Classification:</strong> ${classification}</p>
-                <p><strong>Mann-Kendall Tau:</strong> ${tau} (p-value: ${pValue})</p>
-                <p><strong>Number of Time Periods:</strong> ${data.length}</p>
-                <p><strong>Significant Periods:</strong> ${data.filter(d => d.is_significant).length}</p>
+                <h5>Time Series Analysis for Region: ${escapeHtml(getRegionId(feature.properties))}</h5>
+                <p><strong>Classification:</strong> ${escapeHtml(classification)}</p>
+                <p><strong>Mann-Kendall Tau:</strong> ${escapeHtml(tau)} (p-value: ${escapeHtml(pValue)})</p>
+                <p><strong>Number of Time Periods:</strong> ${escapeHtml(data.length)}</p>
+                <p><strong>Significant Periods:</strong> ${escapeHtml(data.filter(d => d.is_significant).length)}</p>
             `;
         });
         
