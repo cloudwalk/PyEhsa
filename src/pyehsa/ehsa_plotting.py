@@ -532,6 +532,10 @@ class EhsaPlotting:
                 # Convert DataFrame to JSON for embedding
                 data_json = df_processed.to_json(orient='records')
                 
+                # Escape </script> to prevent script breakout XSS attacks
+                # Replace with <\/script> which is safe in JavaScript strings
+                data_json_safe = data_json.replace('</script>', r'<\/script>')
+                
                 # Create JavaScript code to automatically load the data
                 auto_load_script = f"""
         <script>
@@ -539,8 +543,8 @@ class EhsaPlotting:
             document.addEventListener('DOMContentLoaded', function() {{
                 console.log('Loading embedded EHSA data...');
                 
-                // Embedded data
-                const embeddedData = {data_json};
+                // Embedded data (script breakout protected)
+                const embeddedData = {data_json_safe};
                 
                 // Convert to GeoJSON format
                 const geojson = {{
