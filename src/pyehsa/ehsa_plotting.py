@@ -1,3 +1,4 @@
+import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +15,62 @@ from pathlib import Path
 
 
 class EhsaPlotting:
+    @staticmethod
+    def _sanitize_csv_value(value):
+        """
+        Sanitize a value to prevent CSV formula injection attacks.
+        
+        Prefixes potentially dangerous characters that could be interpreted
+        as formulas by spreadsheet applications (Excel, LibreOffice, etc).
+        
+        Parameters:
+        -----------
+        value : any
+            Value to sanitize
+            
+        Returns:
+        --------
+        any
+            Sanitized value safe for CSV export
+        """
+        if pd.isna(value) or value is None:
+            return value
+            
+        # Convert to string for checking
+        str_value = str(value)
+        
+        # Check if value starts with dangerous characters
+        dangerous_chars = ('=', '+', '-', '@', '\t', '\r', '\n', '|')
+        
+        if str_value and str_value[0] in dangerous_chars:
+            # Prefix with single quote to prevent formula execution
+            # This is the standard CSV injection mitigation technique
+            return "'" + str_value
+        
+        return value
+    
+    @staticmethod
+    def _sanitize_dataframe_for_csv(df):
+        """
+        Sanitize all columns in a DataFrame to prevent CSV formula injection.
+        
+        Parameters:
+        -----------
+        df : pandas.DataFrame
+            DataFrame to sanitize
+            
+        Returns:
+        --------
+        pandas.DataFrame
+            Sanitized DataFrame safe for CSV export
+        """
+        df_sanitized = df.copy()
+        
+        for col in df_sanitized.columns:
+            df_sanitized[col] = df_sanitized[col].apply(EhsaPlotting._sanitize_csv_value)
+        
+        return df_sanitized
+    
     @staticmethod
     def plot_ehsa_map_static(df, title="Emerging Hotspots"):
         # Define color scheme
@@ -358,6 +415,9 @@ class EhsaPlotting:
                         df_to_save[col] = df_to_save[col].apply(
                             lambda x: json.dumps(x) if x is not None else None
                         )
+                
+                # Sanitize all values to prevent CSV formula injection attacks
+                df_to_save = EhsaPlotting._sanitize_dataframe_for_csv(df_to_save)
                 
                 df_to_save.to_csv(temp_csv, index=False)
                 print(f"EHSA results saved to: {temp_csv}")

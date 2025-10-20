@@ -100,3 +100,5 @@ for _, row in viz_data.iterrows():
 # Salvar mapa
 m.save('hotspots_sao_paulo.html')
 print(f"\nMapa salvo em: hotspots_sao_paulo.html")
+
+
