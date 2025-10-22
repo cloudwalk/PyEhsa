@@ -553,7 +553,11 @@ class EhsaPlotting:
                         type: 'Feature',
                         geometry: row.geometry,
                         properties: Object.fromEntries(
-                            Object.entries(row).filter(([key, value]) => key !== 'geometry')
+                            Object.entries(row).filter(([key, value]) => {{
+                                // Filter out geometry and dangerous prototype pollution keys
+                                const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+                                return key !== 'geometry' && !dangerousKeys.includes(key);
+                            }})
                         )
                     }}))
                 }};
