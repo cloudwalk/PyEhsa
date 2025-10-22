@@ -486,8 +486,33 @@ class EhsaPlotting:
         ...     include_data=False
         ... )
         """
+        # Validate and sanitize file_path to prevent path traversal attacks
+        if not file_path:
+            raise ValueError("file_path cannot be empty")
+        
+        # Convert to string and check for path traversal attempts
+        file_path_str = str(file_path)
+        
+        # Block absolute paths to sensitive system directories
+        sensitive_paths = ['/etc', '/var', '/usr', '/bin', '/sbin', '/boot', '/sys', '/proc']
+        if any(file_path_str.startswith(p) for p in sensitive_paths):
+            raise ValueError(f"Cannot write to system directory: {file_path_str}")
+        
+        # Detect path traversal attempts
+        if '..' in file_path_str:
+            raise ValueError(f"Path traversal detected in file_path: {file_path_str}")
+        
+        # Ensure file has .html extension for safety
+        if not file_path_str.endswith('.html'):
+            raise ValueError(f"File must have .html extension, got: {file_path_str}")
+        
         # Convert file_path to Path object and get absolute path
         save_path = Path(file_path).resolve()
+        
+        # Final safety check: ensure resolved path doesn't escape to system directories
+        save_path_str = str(save_path)
+        if any(save_path_str.startswith(p) for p in sensitive_paths):
+            raise ValueError(f"Resolved path points to system directory: {save_path_str}")
         
         # Ensure the directory exists
         save_path.parent.mkdir(parents=True, exist_ok=True)
