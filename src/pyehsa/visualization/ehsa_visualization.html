@@ -444,8 +444,18 @@
                 
                 // Create properties object from all columns
                 const properties = {};
+                
+                // Security: Block dangerous prototype pollution keys
+                const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+                
                 headers.forEach((header, index) => {
                     if (index !== geometryIndex) {
+                        // Skip dangerous keys that can pollute object prototypes
+                        if (dangerousKeys.includes(header)) {
+                            console.warn(`Skipping dangerous property key: ${header}`);
+                            return;
+                        }
+                        
                         const value = columns[index];
                         
                         // Handle complex data columns that should be parsed as JSON

@@ -557,9 +557,11 @@ class EhsaPlotting:
                 # Convert DataFrame to JSON for embedding
                 data_json = df_processed.to_json(orient='records')
                 
-                # Escape </script> to prevent script breakout XSS attacks
+                # Escape </script> to prevent script breakout XSS attacks (case-insensitive)
                 # Replace with <\/script> which is safe in JavaScript strings
-                data_json_safe = data_json.replace('</script>', r'<\/script>')
+                # Must handle all case variations since HTML is case-insensitive
+                import re
+                data_json_safe = re.sub(r'</script>', r'<\/script>', data_json, flags=re.IGNORECASE)
                 
                 # Create JavaScript code to automatically load the data
                 auto_load_script = f"""
