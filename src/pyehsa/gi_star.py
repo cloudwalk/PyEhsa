@@ -114,12 +114,15 @@ class GiStar:
         Create spacetime neighbors list exactly matching R's spt_nb function.
         """
         # Get base spatial neighbors from weights object
+        # Performance optimization: Create lookup dictionary to avoid repeated list.index() calls
+        id_to_idx = {loc_id: idx for idx, loc_id in enumerate(w.id_order)}
+        
         nb_base = []
         for i in range(n_locs):
             region_id = w.id_order[i]
             neighbors = w.neighbors[region_id]
-            # Convert neighbor IDs to indices
-            neighbor_indices = [w.id_order.index(nid) for nid in neighbors]
+            # Convert neighbor IDs to indices using O(1) dictionary lookup
+            neighbor_indices = [id_to_idx[nid] for nid in neighbors]
             nb_base.append(neighbor_indices)
         
         # Create spacetime neighbors list

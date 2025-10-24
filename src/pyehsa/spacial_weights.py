@@ -62,6 +62,10 @@ class SpacialWeights:
         spt_neighbors = {}
         spt_weights = {}
         
+        # Performance optimization: Create lookup dictionary to avoid repeated list.index() calls
+        # This changes O(n) lookup to O(1), preventing algorithmic DoS on large datasets
+        id_to_idx = {loc_id: idx for idx, loc_id in enumerate(w.id_order)}
+        
         # For each time period and location, create neighbors including time lags
         for t in range(n_times):
             for i, loc_id in enumerate(w.id_order):
@@ -73,7 +77,7 @@ class SpacialWeights:
                 
                 # Add spatial neighbors from current time period
                 for j, neighbor_id in enumerate(w.neighbors[loc_id]):
-                    neighbor_loc_idx = w.id_order.index(neighbor_id)
+                    neighbor_loc_idx = id_to_idx[neighbor_id]  # O(1) lookup instead of O(n)
                     neighbor_st_idx = t * n_locs + neighbor_loc_idx
                     neighbors_list.append(neighbor_st_idx)
                     weights_list.append(w.weights[loc_id][j])
@@ -83,7 +87,7 @@ class SpacialWeights:
                     if t >= lag:  # Only if we have enough previous time periods
                         lag_t = t - lag
                         for j, neighbor_id in enumerate(w.neighbors[loc_id]):
-                            neighbor_loc_idx = w.id_order.index(neighbor_id)
+                            neighbor_loc_idx = id_to_idx[neighbor_id]  # O(1) lookup instead of O(n)
                             neighbor_st_idx = lag_t * n_locs + neighbor_loc_idx
                             neighbors_list.append(neighbor_st_idx)
                             weights_list.append(w.weights[loc_id][j])
