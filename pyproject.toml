@@ -56,10 +56,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/PyEhsa"
+Homepage = "https://github.com/cloudwalk/PyEhsa"
 Documentation = "https://pyehsa.readthedocs.io"
-Repository = "https://github.com/yourusername/PyEhsa"
-"Bug Tracker" = "https://github.com/yourusername/PyEhsa/issues"
+Repository = "https://github.com/cloudwalk/PyEhsa"
+"Bug Tracker" = "https://github.com/cloudwalk/PyEhsa/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
