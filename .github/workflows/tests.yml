@@ -9,9 +9,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       matrix:
         python-version: [3.9, '3.10', 3.11, 3.12]
+      fail-fast: false
 
     steps:
     - uses: actions/checkout@v4
@@ -23,8 +25,8 @@ jobs:
 
     - name: Install system dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y gdal-bin libgdal-dev libproj-dev proj-data proj-bin libgeos-dev
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq gdal-bin libgdal-dev libproj-dev proj-data proj-bin libgeos-dev
 
     - name: Install Python dependencies
       run: |
