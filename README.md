@@ -124,7 +124,9 @@ ehsa_map = EhsaPlotting.plot_ehsa_map_interactive(
 ehsa_map.show()
 ```
 
-![Example EHSA Map](examples/readme.png)
+<p align="center">
+  <img src="examples/readme.png" alt="Example EHSA Map" width="800"/>
+</p>
 
 ## Classification Types
 

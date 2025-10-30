@@ -4,10 +4,10 @@ Version: 0.1.0
 Summary: A Python library for Emerging Hot Spot Analysis (EHSA) of spatio-temporal data
 Author-email: CloudWalk <lucas.azevedo@cloudwalk.io>
 License: MIT
-Project-URL: Homepage, https://github.com/yourusername/PyEhsa
+Project-URL: Homepage, https://github.com/cloudwalk/PyEhsa
 Project-URL: Documentation, https://pyehsa.readthedocs.io
-Project-URL: Repository, https://github.com/yourusername/PyEhsa
-Project-URL: Bug Tracker, https://github.com/yourusername/PyEhsa/issues
+Project-URL: Repository, https://github.com/cloudwalk/PyEhsa
+Project-URL: Bug Tracker, https://github.com/cloudwalk/PyEhsa/issues
 Keywords: spatial analysis,hotspots,statistics,gis,spatio-temporal
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Science/Research
