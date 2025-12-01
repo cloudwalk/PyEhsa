@@ -5,7 +5,7 @@ PyEhsa provides tools for analyzing spatio-temporal patterns and emerging hotspo
 in geographic data, similar to functionality found in R's sfdep package.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "CloudWalk"
 __email__ = "lucas.azevedo@cloudwalk.io"
 
