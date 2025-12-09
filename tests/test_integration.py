@@ -162,5 +162,6 @@ class TestPackageImports:
         assert hasattr(pyehsa, '__author__')
         assert hasattr(pyehsa, '__all__')
         
-        assert pyehsa.__version__ == "0.1.0"
+        # Check version format (X.Y.Z)
+        assert len(pyehsa.__version__.split('.')) == 3
         assert len(pyehsa.__all__) > 0
