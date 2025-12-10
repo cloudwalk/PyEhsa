@@ -134,7 +134,7 @@ class TestPackageImports:
             GiStar,
             MannKendall,
             PreProcessing,
-            SpacialWeights
+            SpatialWeights
         )
         
         # Check that classes are importable
@@ -144,7 +144,7 @@ class TestPackageImports:
         assert GiStar is not None
         assert MannKendall is not None
         assert PreProcessing is not None
-        assert SpacialWeights is not None
+        assert SpatialWeights is not None
 
     def test_utility_imports(self):
         """Test importing utility functions."""

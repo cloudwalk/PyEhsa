@@ -2,10 +2,10 @@
 PyEhsa: A Python library for Emerging Hot Spot Analysis (EHSA) of spatio-temporal data
 
 PyEhsa provides tools for analyzing spatio-temporal patterns and emerging hotspots
-in geographic data, similar to functionality found in R's sfdep package.
+in geographic data.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "CloudWalk"
 __email__ = "lucas.azevedo@cloudwalk.io"
 
@@ -20,7 +20,7 @@ from .pre_processing import (
     geohashes_to_polygon, 
     PreProcessing
 )
-from .spacial_weights import SpacialWeights
+from .spatial_weights import SpatialWeights
 
 # Define what gets imported with "from pyehsa import *"
 __all__ = [
@@ -32,5 +32,5 @@ __all__ = [
     "geohash_to_polygon",
     "geohashes_to_polygon",
     "PreProcessing",
-    "SpacialWeights"
+    "SpatialWeights"
 ]

@@ -1,15 +1,14 @@
 import pandas as pd
 import numpy as np
 import warnings
-from .spacial_weights import SpacialWeights
+from .spatial_weights import SpatialWeights
 
 
 class GiStar:
     @staticmethod  
     def calculate_gi_star_spacetime(gdf, w, region_id_field, time_period_field, value, k=1, nsim=199):
         """
-        Calculate Gi* statistics for spacetime data matching R sfdep implementation EXACTLY.
-        This is a complete rewrite to match R's local_g_spt function.
+        Calculate Gi* statistics for spacetime data.
         
         Parameters:
         -----------
@@ -24,9 +23,9 @@ class GiStar:
         value : str
             Column name for values to analyze
         k : int
-            Number of time lags (default 1, matching R)
+            Number of time lags (default 1)
         nsim : int
-            Number of simulations for p-values (default 199, matching R default)
+            Number of simulations for p-values (default 199)
             
         Returns:
         --------
@@ -42,7 +41,7 @@ class GiStar:
             warnings.warn(f"nsim={nsim} is large and may consume significant resources. "
                          f"Typical values are 99-999.")
         
-        # Get sorted data (CRITICAL: must match R's ordering)
+        # Get sorted data (by time then region for spacetime cube order)
         gdf_sorted = gdf.sort_values([time_period_field, region_id_field]).reset_index(drop=True)
         
         # Get dimensions
@@ -51,7 +50,7 @@ class GiStar:
         n_locs = len(unique_regions) 
         n_times = len(unique_times)
         
-        # Extract values as array (matching R's spacetime cube order: time-major)
+        # Extract values as array (spacetime cube order: time-major)
         values = gdf_sorted[value].values.astype(float)
         
         print(f"Spacetime cube dimensions:")
@@ -59,21 +58,21 @@ class GiStar:
         print(f"  - {n_times} time periods") 
         print(f"  - {len(gdf_sorted)} total observations")
         
-        # Create spacetime neighbors list (matching R's spt_nb function)
-        spt_nb = GiStar._create_spacetime_neighbors_r_style(w, n_times, n_locs, k)
-        spt_wt = GiStar._create_spacetime_weights_r_style(w, spt_nb, n_times, n_locs, k)
+        # Create spacetime neighbors list
+        spt_nb = GiStar._create_spacetime_neighbors(w, n_times, n_locs, k)
+        spt_wt = GiStar._create_spacetime_weights(w, spt_nb, n_times, n_locs, k)
         
         # Debug: Check for potential out-of-bounds issues
         max_neighbor_idx = max(max(neighbors) if neighbors else 0 for neighbors in spt_nb)
         if max_neighbor_idx >= len(values):
             print(f"WARNING: Max neighbor index {max_neighbor_idx} exceeds data size {len(values)}")
-            print(f"This will be handled by bounds checking in _find_xj_r_style")
+            print(f"This will be handled by bounds checking in _find_neighbor_values")
         
-        # Calculate observed Gi* using R's exact local_g_spt implementation
-        observed_gi = GiStar._local_g_spt_r_exact(values, unique_times, spt_nb, spt_wt, n_locs)
+        # Calculate observed Gi*
+        observed_gi = GiStar._local_g_spt(values, unique_times, spt_nb, spt_wt, n_locs)
         
-        # Calculate p-values using R's exact simulation approach  
-        p_values = GiStar._calculate_p_values_r_exact(values, unique_times, spt_nb, spt_wt, n_locs, observed_gi, nsim)
+        # Calculate p-values using simulation approach  
+        p_values = GiStar._calculate_p_values(values, unique_times, spt_nb, spt_wt, n_locs, observed_gi, nsim)
         
         # Summary stats for verification
         print(f"Gi* range: [{np.nanmin(observed_gi):.3f}, {np.nanmax(observed_gi):.3f}]")
@@ -88,7 +87,7 @@ class GiStar:
         # DEBUG: Neighbor permutation test
         print(f"DEBUG - Neighbor permutation test:")
         test_nb_orig = spt_nb[:3]  # First 3 neighbor lists
-        test_nb_perm = GiStar._conditional_permute_neighbors_r_style(spt_nb[:10], n_locs)[:3]
+        test_nb_perm = GiStar._conditional_permute_neighbors(spt_nb[:10], n_locs)[:3]
         print(f"  Original neighbors: {test_nb_orig}")
         print(f"  Permuted neighbors: {test_nb_perm}")
         print(f"  Neighbor structure changed: {test_nb_orig != test_nb_perm}")
@@ -97,11 +96,11 @@ class GiStar:
         gdf_sorted['gi'] = observed_gi
         gdf_sorted['p_sim'] = p_values
         
-        # Create cluster classifications (matching R's threshold = 0.01!)
-        p_threshold = 0.01  # CRITICAL: R uses 0.01, not 0.05!
+        # Create cluster classifications (threshold = 0.01)
+        p_threshold = 0.01
         clusters = np.full(len(observed_gi), 'Not Significant', dtype=object)
-        hot_spots = (p_values <= p_threshold) & (observed_gi > 0)  # Use <= like R
-        cold_spots = (p_values <= p_threshold) & (observed_gi < 0)  # Use <= like R  
+        hot_spots = (p_values <= p_threshold) & (observed_gi > 0)
+        cold_spots = (p_values <= p_threshold) & (observed_gi < 0)
         clusters[hot_spots] = 'Hot Spot'
         clusters[cold_spots] = 'Cold Spot'
         gdf_sorted['cluster'] = clusters
@@ -109,9 +108,9 @@ class GiStar:
         return gdf_sorted
     
     @staticmethod
-    def _create_spacetime_neighbors_r_style(w, n_times, n_locs, k):
+    def _create_spacetime_neighbors(w, n_times, n_locs, k):
         """
-        Create spacetime neighbors list exactly matching R's spt_nb function.
+        Create spacetime neighbors list.
         """
         # Get base spatial neighbors from weights object
         # Performance optimization: Create lookup dictionary to avoid repeated list.index() calls
@@ -151,9 +150,9 @@ class GiStar:
         return spt_nb
     
     @staticmethod
-    def _create_spacetime_weights_r_style(w, spt_nb, n_times, n_locs, k):
+    def _create_spacetime_weights(w, spt_nb, n_times, n_locs, k):
         """
-        Create spacetime weights list exactly matching R's spt_wt function.
+        Create spacetime weights list.
         """
         # Get base spatial weights from weights object  
         wt_base = []
@@ -182,10 +181,10 @@ class GiStar:
         return spt_wt
     
     @staticmethod
-    def _find_xj_r_style(values, spt_nb):
+    def _find_neighbor_values(values, spt_nb):
         """
-        Implement R's find_xj function: get neighbor values for each observation.
-        Fixed: Add bounds checking to handle incomplete spacetime cubes.
+        Get neighbor values for each observation.
+        Includes bounds checking to handle incomplete spacetime cubes.
         """
         xj = []
         max_idx = len(values) - 1
@@ -198,12 +197,12 @@ class GiStar:
         return xj
     
     @staticmethod
-    def _local_g_spt_r_exact(values, times, spt_nb, spt_wt, n_locs):
+    def _local_g_spt(values, times, spt_nb, spt_wt, n_locs):
         """
-        Exact implementation of R's local_g_spt function.
+        Implementation of local_g_spt function for spacetime Gi* calculation.
         """
-        # Get neighbor values using find_xj equivalent
-        xj = GiStar._find_xj_r_style(values, spt_nb)
+        # Get neighbor values
+        xj = GiStar._find_neighbor_values(values, spt_nb)
         
         # Initialize result array
         all_gis = np.zeros(len(values))
@@ -218,8 +217,8 @@ class GiStar:
             xj_time = xj[start_idx:end_idx]
             wt_time = spt_wt[start_idx:end_idx]
             
-            # Calculate Gi* for this time period using R's exact formula
-            gi_time = GiStar._local_g_spt_calc_r_exact(x_time, xj_time, wt_time)
+            # Calculate Gi* for this time period
+            gi_time = GiStar._local_g_spt_calc(x_time, xj_time, wt_time)
             
             # Store results
             all_gis[start_idx:end_idx] = gi_time
@@ -227,10 +226,10 @@ class GiStar:
         return all_gis
     
     @staticmethod
-    def _local_g_spt_calc_r_exact(x, xj, wj):
+    def _local_g_spt_calc(x, xj, wj):
         """
-        Exact implementation of R's local_g_spt_calc function.
-        Fixed: Handle mismatched neighbor/weight lengths due to bounds checking.
+        Implementation of local_g_spt_calc function.
+        Handles mismatched neighbor/weight lengths due to bounds checking.
         """
         n = len(x)
         
@@ -266,7 +265,7 @@ class GiStar:
         # Numerator
         numerator = lx - EG
         
-        # VG: variance (R's exact formula)
+        # VG: variance
         VG = si2 * ((n * S1i - Wi**2) / (n - 1))
         
         # Final Gi* calculation
@@ -280,11 +279,10 @@ class GiStar:
         return result
     
     @staticmethod
-    def _conditional_permute_neighbors_r_style(spt_nb, n_locs):
+    def _conditional_permute_neighbors(spt_nb, n_locs):
         """
-        Implement R's conditional permutation of neighbors exactly:
+        Conditional permutation of neighbors:
         For each location i, randomly reassign its neighbors while keeping same neighbor count.
-        This matches R's shuffle_nbs: sample(x[-i], size=card) where x=1:n
         """
         permuted_nb = []
         n_total = len(spt_nb)
@@ -293,7 +291,7 @@ class GiStar:
             card = len(neighbors)  # Number of neighbors to maintain
             
             if card > 0:
-                # R's approach: sample 'card' neighbors from {0, 1, ..., n_total-1} \ {i}
+                # Sample 'card' neighbors from {0, 1, ..., n_total-1} \ {i}
                 all_indices = list(range(n_total))
                 all_indices.remove(i)  # Exclude self (location i)
                 
@@ -311,10 +309,10 @@ class GiStar:
         return permuted_nb
     
     @staticmethod
-    def _calculate_p_values_r_exact(values, times, spt_nb, spt_wt, n_locs, observed_gi, nsim):
+    def _calculate_p_values(values, times, spt_nb, spt_wt, n_locs, observed_gi, nsim):
         """
-        Exact implementation of R's p-value calculation using conditional permutation.
-        CRITICAL FIX: R permutes NEIGHBOR STRUCTURE, not values!
+        P-value calculation using conditional permutation.
+        Permutes NEIGHBOR STRUCTURE, not values.
         """
         n_total = len(values)
         
@@ -323,20 +321,20 @@ class GiStar:
         
         # Run simulations
         for sim in range(nsim):
-            # CRITICAL FIX: R conditionally permutes NEIGHBOR STRUCTURE
-            # Keep values fixed, change spatial relationships!
-            perm_spt_nb = GiStar._conditional_permute_neighbors_r_style(spt_nb, n_locs)
+            # Conditionally permute NEIGHBOR STRUCTURE
+            # Keep values fixed, change spatial relationships
+            perm_spt_nb = GiStar._conditional_permute_neighbors(spt_nb, n_locs)
             
             # Calculate Gi* for original values with permuted neighbor structure
-            sim_gi = GiStar._local_g_spt_r_exact(values, times, perm_spt_nb, spt_wt, n_locs)
+            sim_gi = GiStar._local_g_spt(values, times, perm_spt_nb, spt_wt, n_locs)
             sim_results[:, sim] = sim_gi
         
-        # Calculate p-values using R's exact method
+        # Calculate p-values
         p_values = np.ones(n_total)
         
         for i in range(n_total):
             if not np.isnan(observed_gi[i]):
-                # R uses this exact formula for two-tailed test
+                # Two-tailed test
                 upper_tail = np.sum(sim_results[i, :] >= observed_gi[i]) + 1
                 lower_tail = np.sum(sim_results[i, :] <= observed_gi[i]) + 1
                 
@@ -351,8 +349,8 @@ class GiStar:
     @staticmethod
     def calculate_gi_star_by_period(gdf, w, region_id_field, time_period_field, value):
         """
-        DEPRECATED: Use calculate_gi_star_spacetime instead for R compatibility.
-        This method uses period-by-period calculation which doesn't match R sfdep.
+        DEPRECATED: Use calculate_gi_star_spacetime instead.
+        This method uses period-by-period calculation.
         """
-        print("WARNING: This method is deprecated. Use calculate_gi_star_spacetime for R sfdep compatibility.")
+        print("WARNING: This method is deprecated. Use calculate_gi_star_spacetime instead.")
         return GiStar.calculate_gi_star_spacetime(gdf, w, region_id_field, time_period_field, value)

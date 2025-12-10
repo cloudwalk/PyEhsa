@@ -12,12 +12,10 @@ class EhsaClassification:
 
     @staticmethod
     def consecutive_hotspot(gs, sigs, n):
-        # R: if (!(sigs[n] && gs[n] > 0)) return(FALSE)
         if not (sigs[n - 1] and gs[n - 1] > 0):
             return False
 
-        # R's complex final run calculation: which(diff(cumsum(c(rev(sigs), FALSE))) == 0)[1]
-        # This finds the length of the final consecutive run of TRUE values
+        # Calculate the length of the final consecutive run of TRUE values
         reversed_sigs = np.flip(sigs)
         extended_sigs = np.append(reversed_sigs, False)
         cumsum_vals = np.cumsum(extended_sigs)
@@ -30,7 +28,7 @@ class EhsaClassification:
         else:
             n_final_run = zero_indices[0] + 1
         
-        # R: run_index <- seq(n - n_final_run + 1, n, by = 1)
+        # Calculate run index
         run_start = n - n_final_run
         run_index = np.arange(run_start, n)
         
@@ -106,11 +104,10 @@ class EhsaClassification:
 
     @staticmethod
     def consecutive_coldspot(gs, sigs, n):
-        # R: if (!(sigs[n] && gs[n] < 0)) return(FALSE)  
         if not (sigs[n - 1] and gs[n - 1] < 0):
             return False
 
-        # R's complex final run calculation (same as hotspot)
+        # Calculate final run (same logic as hotspot)
         reversed_sigs = np.flip(sigs)
         extended_sigs = np.append(reversed_sigs, False)
         cumsum_vals = np.cumsum(extended_sigs)
@@ -486,7 +483,7 @@ class EhsaClassification:
 
             # Spatial Context
             # Taking from the first time period of the group.
-            # Assuming 'neighbors' and 'weights' columns exist from SpacialWeights step.
+            # Assuming 'neighbors' and 'weights' columns exist from SpatialWeights step.
             
             # Get neighbors from the global PySAL weights object
             neighbors_list = w.neighbors.get(region, [])

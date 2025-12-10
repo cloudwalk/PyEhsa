@@ -10,7 +10,7 @@ import numpy as np
 from .ehsa_classification import EhsaClassification
 from .gi_star import GiStar
 from .pre_processing import PreProcessing
-from .spacial_weights import SpacialWeights
+from .spatial_weights import SpatialWeights
 from .ehsa_plotting import EhsaPlotting
 
 
@@ -88,7 +88,6 @@ class EmergingHotspotAnalysis:
     ):
         """
         Perform Emerging Hot Spot Analysis (EHSA) on spatio-temporal data.
-        Now matches R sfdep implementation more closely.
         
         Parameters:
         -----------
@@ -108,9 +107,9 @@ class EmergingHotspotAnalysis:
             Directory path where to save the log file. If None and save_log=True,
             saves to current working directory. Ignored if save_log=False.
         k : int, default 1
-            Number of time lags to include in neighbors (matches R sfdep default)
+            Number of time lags to include in neighbors
         nsim : int, default 49
-            Number of simulations for p-value calculation (reduced from R's 199 for speed)
+            Number of simulations for p-value calculation
             
         Returns:
         --------
@@ -119,15 +118,15 @@ class EmergingHotspotAnalysis:
             
         Examples:
         ---------
-        >>> # Basic usage (matches R sfdep)
+        >>> # Basic usage
         >>> results = EmergingHotspotAnalysis.emerging_hotspot_analysis(
         ...     df, 'geohash_6', 'time_period', 'cbk_count'
         ... )
         
-        >>> # With R sfdep exact parameters  
+        >>> # With custom parameters  
         >>> results = EmergingHotspotAnalysis.emerging_hotspot_analysis(
         ...     df, 'geohash_6', 'time_period', 'cbk_count',
-        ...     k=1, nsim=199  # Matches R defaults exactly
+        ...     k=1, nsim=199
         ... )
         """
         # Validate nsim parameter to prevent resource exhaustion
@@ -182,20 +181,20 @@ class EmergingHotspotAnalysis:
         logger.info(f"✅ Preprocessing completed: {gdf.shape}")
         logger.info(f"   - GeoDataFrame created with {len(gdf)} records")
         
-        # Step 2.5: Complete spacetime cube (matching R sfdep)
+        # Step 2.5: Complete spacetime cube
         logger.info("🔲 Step 2.5: Creating complete spacetime cube...")
         gdf_complete = PreProcessing.complete_spacetime_cube(gdf, region_id_field, time_period_field)
         logger.info(f"✅ Complete spacetime cube created: {gdf_complete.shape}")
         
-        # Filter out rows with NaN values (matching R: filter(!is.na(value)))
+        # Filter out rows with NaN values
         before_filter = len(gdf_complete)
         gdf_complete = gdf_complete.dropna(subset=[value])
         after_filter = len(gdf_complete)
         logger.info(f"🔍 Filtered out {before_filter - after_filter} rows with NaN values in '{value}'")
         logger.info(f"   - Final dataset for analysis: {gdf_complete.shape}")
         
-        # CRITICAL: Sort by time_period then region_id (matching R's spacetime cube order)
-        logger.info("🔄 Sorting data to match R spacetime cube order...")
+        # CRITICAL: Sort by time_period then region_id (spacetime cube order)
+        logger.info("🔄 Sorting data for spacetime cube order...")
         gdf_complete = gdf_complete.sort_values([time_period_field, region_id_field]).reset_index(drop=True)
         logger.info(f"   - Data sorted by [{time_period_field}, {region_id_field}]")
         
@@ -205,16 +204,15 @@ class EmergingHotspotAnalysis:
         # Step 3: Spatial weights calculation
         logger.info("🔗 Step 3: Calculating spatial weights...")
         step3_start = time.time()
-        w = SpacialWeights.calculate_spatial_weights(gdf, region_id_field)
+        w = SpatialWeights.calculate_spatial_weights(gdf, region_id_field)
         step3_time = time.time() - step3_start
         logger.info(f"✅ Spatial weights calculated in {step3_time:.2f}s")
         logger.info(f"   - Spatial weights matrix: {w.n} regions")
         logger.info(f"   - Average neighbors per region: {w.mean_neighbors:.1f}")
         
-        # Step 4: Gi* statistics calculation (using R sfdep compatible method)
+        # Step 4: Gi* statistics calculation
         logger.info("📊 Step 4: Calculating Getis-Ord Gi* statistics (spacetime method)...")
         step4_start = time.time()
-        # Use the new spacetime method that matches R sfdep implementation
         gdf = GiStar.calculate_gi_star_spacetime(
             gdf, w, region_id_field, time_period_field, value, k=k, nsim=nsim
         )

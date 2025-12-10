@@ -91,7 +91,6 @@ class PreProcessing:
     def complete_spacetime_cube(gdf, region_id_field, time_period_field):
         """
         Create a complete spacetime cube ensuring every location has data for every time period.
-        This matches R sfdep's complete_spacetime_cube() function.
         
         Parameters:
         -----------

@@ -3,14 +3,15 @@ import numpy as np
 from libpysal.weights import Queen
 
 
-class SpacialWeights:
+class SpatialWeights:
     @staticmethod
     def calculate_spatial_weights(gdf, region_id_field):
         """
         Calculates spatial weights for the entire dataset based on unique geometries.
-        Matches R sfdep implementation:
+        
+        Method:
         1. Uses Queen contiguity 
-        2. Includes self as neighbor (like R's include_self())
+        2. Includes self as neighbor
         3. Row standardized weights
         """
         unique_geoms = gdf.drop_duplicates(subset=region_id_field)
@@ -22,8 +23,8 @@ class SpacialWeights:
         # that share at least one vertex (corners or edges).
         w = Queen.from_dataframe(unique_geoms, use_index=True)
         
-        # Include self as neighbor (matching R's include_self() function)
-        # This is critical for matching R results
+        # Include self as neighbor
+        # This is critical for Gi* calculation
         for i in w.id_order:
             if i not in w.neighbors[i]:
                 # Add self to neighbors list
@@ -31,7 +32,7 @@ class SpacialWeights:
                 # Add weight of 1.0 for self  
                 w.weights[i] = w.weights[i] + [1.0]
         
-        # Apply row standardization (matching R's row standardized weights)
+        # Apply row standardization
         w.transform = 'r'
         
         return w
@@ -40,7 +41,6 @@ class SpacialWeights:
     def create_spacetime_neighbors_and_weights(w, n_times, n_locs, k=1):
         """
         Create time-lagged spacetime neighbors and weights.
-        Matches R's spt_nb() and spt_wt() functions.
         
         Parameters:
         -----------
@@ -51,7 +51,7 @@ class SpacialWeights:
         n_locs : int  
             Number of unique locations
         k : int
-            Number of time lags to include (default 1, matching R default)
+            Number of time lags to include (default 1)
             
         Returns:
         --------

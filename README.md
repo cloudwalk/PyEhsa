@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://github.com/cloudwalk/PyEhsa/actions/workflows/tests.yml/badge.svg)](https://github.com/cloudwalk/PyEhsa/actions/workflows/tests.yml)
 
-**PyEhsa** is a Python library for **Emerging Hot Spot Analysis (EHSA)** of spatio-temporal data, providing functionality similar to R's `sfdep` package. It enables researchers and analysts to identify and classify spatial-temporal patterns, emerging hotspots, and coldspots in geographic data.
+**PyEhsa** is a Python library for **Emerging Hot Spot Analysis (EHSA)** of spatio-temporal data. It enables researchers and analysts to identify and classify spatial-temporal patterns, emerging hotspots, and coldspots in geographic data.
 
 ## Key Features
 
@@ -92,7 +92,7 @@ results = EmergingHotspotAnalysis.emerging_hotspot_analysis(
 
 - **`nsim`** (int, default=99): Number of Monte Carlo simulations for statistical significance testing. Higher values provide more robust p-values but increase computation time.
   - `nsim=99`: Fast, suitable for exploratory analysis
-  - `nsim=199`: Balanced (matches R's default)
+  - `nsim=199`: Balanced
   - `nsim=999`: High precision for final analyses
   - Minimum recommended: 99
 
@@ -215,7 +215,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Related Work
 
 PyEhsa is inspired by and provides similar functionality to:
-- R's `sfdep` package for spatial dependence analysis
 - ArcGIS's Emerging Hot Spot Analysis tool
 - PySAL ecosystem for spatial analysis
 
